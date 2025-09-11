@@ -6,6 +6,9 @@
     "codex": "bin/codex.js"
   },
   "type": "module",
+  "scripts": {
+    "build": "cd ../codex-rs && cargo build --release"
+  },
   "engines": {
     "node": ">=20"
   },

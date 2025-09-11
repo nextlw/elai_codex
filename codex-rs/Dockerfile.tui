@@ -1,0 +1,163 @@
+# ================================
+# Dockerfile para Codex-RS TUI (Rust Nativo)
+# ================================
+
+# =====================================
+# Stage 1: Build Environment
+# =====================================
+FROM rust:1.75-bookworm as builder
+
+# Instalar dependências de sistema necessárias para build
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Configurar diretório de trabalho
+WORKDIR /build
+
+# Copiar manifesto de dependências primeiro (para cache de layers)
+COPY Cargo.toml Cargo.lock ./
+COPY rust-toolchain.toml ./
+COPY clippy.toml ./
+
+# Copiar todos os Cargo.toml dos workspace members
+COPY ansi-escape/Cargo.toml ./ansi-escape/
+COPY apply-patch/Cargo.toml ./apply-patch/
+COPY arg0/Cargo.toml ./arg0/
+COPY cli/Cargo.toml ./cli/
+COPY common/Cargo.toml ./common/
+COPY core/Cargo.toml ./core/
+COPY exec/Cargo.toml ./exec/
+COPY execpolicy/Cargo.toml ./execpolicy/
+COPY file-search/Cargo.toml ./file-search/
+COPY linux-sandbox/Cargo.toml ./linux-sandbox/
+COPY login/Cargo.toml ./login/
+COPY mcp-client/Cargo.toml ./mcp-client/
+COPY mcp-server/Cargo.toml ./mcp-server/
+COPY mcp-types/Cargo.toml ./mcp-types/
+COPY ollama/Cargo.toml ./ollama/
+COPY protocol/Cargo.toml ./protocol/
+COPY protocol-ts/Cargo.toml ./protocol-ts/
+COPY tui/Cargo.toml ./tui/
+
+# Criar estrutura de diretórios vazios para deps
+RUN mkdir -p \
+    ansi-escape/src \
+    apply-patch/src \
+    arg0/src \
+    cli/src \
+    common/src \
+    core/src \
+    exec/src \
+    execpolicy/src \
+    file-search/src \
+    linux-sandbox/src \
+    login/src \
+    mcp-client/src \
+    mcp-server/src \
+    mcp-types/src \
+    ollama/src \
+    protocol/src \
+    protocol-ts/src \
+    tui/src
+
+# Criar arquivos lib.rs/main.rs vazios para satisfazer cargo
+RUN echo 'fn main() {}' > cli/src/main.rs && \
+    echo 'fn main() {}' > exec/src/main.rs && \
+    echo 'fn main() {}' > tui/src/main.rs && \
+    find . -name "src" -type d -exec touch {}/lib.rs \;
+    
+    # Copiar código fonte real
+COPY . .
+
+# Build inicial das dependências (cache layer)
+RUN cargo build --release --workspace
+# RUN rm -rf */src
+
+
+# Build final otimizado com todas as features
+ENV CARGO_TERM_COLOR=never
+RUN cargo build --release --bin codex \
+    && strip target/release/codex
+
+# =====================================
+# Stage 2: Runtime Environment
+# =====================================
+FROM debian:bookworm-slim as runtime
+
+# Instalar dependências runtime mínimas
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    git \
+    curl \
+    less \
+    ripgrep \
+    && rm -rf /var/lib/apt/lists/*
+
+# Criar usuário não-root
+RUN groupadd -r codex && useradd -r -g codex codex
+
+# Criar diretórios necessários
+RUN mkdir -p /app /home/codex/.codex /logs && \
+    chown -R codex:codex /app /home/codex /logs
+
+# Copiar binário otimizado
+COPY --from=builder /build/target/release/codex /usr/local/bin/codex
+
+# Copiar arquivos de configuração se existirem
+RUN mkdir -p /usr/local/share/codex && \
+    cp /build/core/src/seatbelt_base_policy.sbpl /usr/local/share/codex/ || true && \
+    cp /build/execpolicy/src/default.policy /usr/local/share/codex/ || true
+
+# Definir usuário
+USER codex
+WORKDIR /app
+
+# Variáveis de ambiente otimizadas para container
+ENV RUST_LOG=codex_core=info,codex_tui=info
+ENV RUST_BACKTRACE=1
+ENV CODEX_CONFIG_PATH=/home/codex/.codex/config.toml
+ENV CODEX_CACHE_DIR=/home/codex/.codex/cache
+ENV CODEX_LOG_DIR=/logs
+
+# Labels para metadados
+LABEL org.opencontainers.image.title="Codex TUI (Rust Native)"
+LABEL org.opencontainers.image.description="Codex AI Assistant with native Rust TUI interface"
+LABEL org.opencontainers.image.version="latest"
+LABEL org.opencontainers.image.source="https://github.com/openai/codex"
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD codex --version || exit 1
+
+# Entrypoint configurável
+ENTRYPOINT ["codex"]
+CMD ["--help"]
+
+# =====================================
+# Stage 3: Development Environment (opcional)
+# =====================================
+FROM runtime as dev
+
+USER root
+
+# Instalar ferramentas de desenvolvimento
+RUN apt-get update && apt-get install -y \
+    vim \
+    tmux \
+    htop \
+    strace \
+    gdb \
+    valgrind \
+    && rm -rf /var/lib/apt/lists/*
+
+# Voltar para usuário codex
+USER codex
+
+# Configuração para desenvolvimento
+ENV RUST_LOG=debug
+ENV RUST_BACKTRACE=full
+
+CMD ["bash"]
