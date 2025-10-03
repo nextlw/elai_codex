@@ -1,0 +1,26 @@
+[package]
+authors = ["Codex Team"]
+description = "Wrapper Cloud Run Axum server for Codex App Server"
+edition = "2021"
+license = "MIT"
+name = "codex-wrapper-cloud-run"
+publish = false
+version = "0.1.0"
+
+[dependencies]
+anyhow = "1.0"
+axum = "0.7"
+chrono = "0.4"
+cloud-storage = "0.11"
+# codex-app-server = { path = "../app-server" } # Usando binário pré-compilado
+dotenvy = "0.15"
+futures = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+tokio = { version = "1.37", features = ["full"] }
+tokio-stream = "0.1"
+tokio-util = { version = "0.7", features = ["codec"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"
+uuid = { version = "1", features = ["v4"] }

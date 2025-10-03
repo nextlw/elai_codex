@@ -1,0 +1,37 @@
+# Build artifacts
+target/
+**/target/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+
+# Git
+.git/
+.gitignore
+
+# Docs
+*.md
+docs/
+
+# Tests
+tests/
+test-*.sh
+
+# CLI local não é necessário, mas o crate CLI do workspace principal é
+cli/target/
+cli/Cargo.lock
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/

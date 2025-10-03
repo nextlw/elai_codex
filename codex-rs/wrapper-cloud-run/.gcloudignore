@@ -1,0 +1,23 @@
+# Ignore everything by default
+*
+
+# Include only what's needed for the Docker build
+!Cargo.toml
+!Cargo.lock
+!src/
+!codex-x86_64-unknown-linux-musl
+!Dockerfile
+
+# Explicitly exclude build artifacts even if matched above
+target/
+*.swp
+*.swo
+*~
+.git/
+.gitignore
+*.md
+docs/
+tests/
+*.log
+tmp/
+temp/

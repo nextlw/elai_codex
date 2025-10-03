@@ -1,0 +1,15 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-f'
+      - 'wrapper-cloud-run/Dockerfile'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/elaihub-prod/elai-wrapper/codex-wrapper:latest'
+      - '.'
+images:
+  - 'us-central1-docker.pkg.dev/elaihub-prod/elai-wrapper/codex-wrapper:latest'
+timeout: 3600s
+options:
+  machineType: 'E2_HIGHCPU_8'
+  diskSizeGb: 100
