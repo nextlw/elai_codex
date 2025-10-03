@@ -263,6 +263,10 @@ pub async fn run_codex_app_server_stream(req: ExecRequest) -> SseEventStream {
                 // Adiciona o comando "proto" para usar o modo de protocolo
                 cmd.arg("proto");
 
+                // IMPORTANTE: Force full access via CLI args (o JSON sandbox_policy é ignorado!)
+                cmd.arg("-c");
+                cmd.arg("sandbox_mode=off");
+
                 cmd.stdin(std::process::Stdio::piped())
                     .stdout(std::process::Stdio::piped())
                     .stderr(std::process::Stdio::piped());
