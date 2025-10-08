@@ -32,7 +32,7 @@ RUN cargo build --release --bin codex-wrapper-cloud-run
 # Use debian:trixie-slim to match GLIBC version from rust:1.90-slim
 FROM debian:trixie-slim
 
-# Install runtime dependencies including Google Cloud SDK, Python 3.12 and Node.js
+# Install runtime dependencies including Google Cloud SDK, Python 3 and Node.js
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     libssl3 \
@@ -40,7 +40,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-transport-https \
     gnupg \
     lsb-release \
-    python3.12 \
+    python3 \
     python3-pip \
     python3-venv \
     nodejs \
@@ -72,7 +72,7 @@ COPY wrapper-cloud-run/mcp-servers/pipedrive /app/mcp-servers/pipedrive
 
 # Install Python dependencies for MCP Pipedrive
 RUN cd /app/mcp-servers/pipedrive && \
-    python3.12 -m pip install --no-cache-dir --break-system-packages \
+    python3 -m pip install --no-cache-dir --break-system-packages \
     httpx>=0.28.1 \
     mcp[cli]>=1.8.0 \
     pydantic>=2.11.4 \

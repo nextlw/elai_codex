@@ -5,7 +5,7 @@
 
 [mcp_servers.pipedrive]
 # Usando o MCP Pipedrive via stdio (local no mesmo container)
-command = "python3.12"
+command = "python3"
 args = ["/app/mcp-servers/pipedrive/server.py"]
 
 # Variáveis de ambiente do MCP Pipedrive
