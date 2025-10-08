@@ -68,7 +68,7 @@ COPY wrapper-cloud-run/codex-x86_64-unknown-linux-musl /app/codex
 COPY wrapper-cloud-run/config.toml /app/config.toml
 
 # Copy MCP Pipedrive server
-COPY wrapper-cloud-run/mcp-servers/mcp_pipedrive /app/mcp-servers/pipedrive
+COPY wrapper-cloud-run/mcp-servers/pipedrive /app/mcp-servers/pipedrive
 
 # Install Python dependencies for MCP Pipedrive
 RUN cd /app/mcp-servers/pipedrive && \
