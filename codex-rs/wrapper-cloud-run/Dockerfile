@@ -32,7 +32,7 @@ RUN cargo build --release --bin codex-wrapper-cloud-run
 # Use debian:trixie-slim to match GLIBC version from rust:1.90-slim
 FROM debian:trixie-slim
 
-# Install runtime dependencies including Google Cloud SDK for gsutil
+# Install runtime dependencies including Google Cloud SDK, Python 3.12 and Node.js
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     libssl3 \
@@ -40,6 +40,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-transport-https \
     gnupg \
     lsb-release \
+    python3.12 \
+    python3-pip \
+    python3-venv \
+    nodejs \
+    npm \
     && echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list \
     && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg \
     && apt-get update && apt-get install -y --no-install-recommends google-cloud-cli \
@@ -61,6 +66,22 @@ COPY wrapper-cloud-run/codex-x86_64-unknown-linux-musl /app/codex
 
 # Copy config.toml for MCP and model configuration
 COPY wrapper-cloud-run/config.toml /app/config.toml
+
+# Copy MCP Pipedrive server
+COPY wrapper-cloud-run/mcp-servers/mcp_pipedrive /app/mcp-servers/pipedrive
+
+# Install Python dependencies for MCP Pipedrive
+RUN cd /app/mcp-servers/pipedrive && \
+    python3.12 -m pip install --no-cache-dir --break-system-packages \
+    httpx>=0.28.1 \
+    mcp[cli]>=1.8.0 \
+    pydantic>=2.11.4 \
+    python-dotenv>=1.1.0 \
+    fastmcp
+
+# Install Node.js dependencies for MCP Pipedrive
+RUN cd /app/mcp-servers/pipedrive && \
+    npm install --production
 
 # Ensure both binaries are executable
 RUN chmod +x /app/codex-wrapper-cloud-run /app/codex

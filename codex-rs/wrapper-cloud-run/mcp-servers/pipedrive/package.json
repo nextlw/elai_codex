@@ -1,0 +1,16 @@
+{
+  "name": "mcp_pipedrive",
+  "version": "1.0.0",
+  "description": "A Model Control Protocol (MCP) server implementation for interacting with the Pipedrive CRM API. This server enables Claude to create, read, update, and delete Pipedrive records through MCP tool calls.",
+  "main": "proxy-auth.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "google-auth-library": "^10.4.0"
+  }
+}

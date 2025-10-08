@@ -4,12 +4,10 @@
 # Registra servidores MCP externos que podem ser chamados pelo Codex
 
 [mcp_servers.pipedrive]
-# Usando o MCP Pipedrive deployado no Cloud Run
-session_url = "https://mcp-pipedrive-467992722695.us-central1.run.app/sessions"
-url = "https://mcp-pipedrive-467992722695.us-central1.run.app/messages/"
-
-# Autenticação via bearer token (opcional, caso Cloud Run esteja público)
-# bearer_token = "seu-token-aqui"
+# Usando o MCP Pipedrive via stdio (local no mesmo container)
+command = "python3.12"
+args = ["/app/mcp-servers/pipedrive/server.py"]
+env = { "TRANSPORT" = "stdio" }
 
 # Timeouts
 startup_timeout_sec = 30 # Tempo para inicializar conexão
