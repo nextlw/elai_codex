@@ -61,9 +61,9 @@ pub mod types;
 #[cfg(target_os = "windows")]
 pub const OPENAI_DEFAULT_MODEL: &str = "gpt-5";
 #[cfg(not(target_os = "windows"))]
-pub const OPENAI_DEFAULT_MODEL: &str = "gpt-5-codex";
-const OPENAI_DEFAULT_REVIEW_MODEL: &str = "gpt-5-codex";
-pub const GPT_5_CODEX_MEDIUM_MODEL: &str = "gpt-5-codex";
+pub const OPENAI_DEFAULT_MODEL: &str = "gpt-5.1-codex-mini";
+const OPENAI_DEFAULT_REVIEW_MODEL: &str = "gpt-5.1-codex-mini";
+pub const GPT_5_CODEX_MEDIUM_MODEL: &str = "gpt-5.1-codex-mini";
 
 /// Maximum number of bytes of the documentation that will be embedded. Larger
 /// files are *silently truncated* to this size so we do not take up too much of
