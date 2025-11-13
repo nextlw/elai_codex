@@ -21,7 +21,7 @@ use codex_feedback::CodexFeedback;
 use codex_protocol::protocol::SessionSource;
 use std::sync::Arc;
 
-pub(crate) struct MessageProcessor {
+pub struct MessageProcessor {
     outgoing: Arc<OutgoingMessageSender>,
     codex_message_processor: CodexMessageProcessor,
     initialized: bool,

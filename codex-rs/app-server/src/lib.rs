@@ -35,6 +35,8 @@ mod message_processor;
 mod models;
 mod outgoing_message;
 
+// Exportar MessageProcessor para uso externo (gateway)
+
 /// Size of the bounded channels used to communicate between tasks. The value
 /// is a balance between throughput and memory usage – 128 messages should be
 /// plenty for an interactive CLI.

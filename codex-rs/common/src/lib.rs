@@ -37,3 +37,19 @@ pub mod model_presets;
 // Shared approval presets (AskForApproval + Sandbox) used by TUI and MCP server
 // Not to be confused with AskForApproval, which we should probably rename to EscalationPolicy.
 pub mod approval_presets;
+
+#[must_use]
+pub fn add_numbers(lhs: i64, rhs: i64) -> i64 {
+    lhs + rhs
+}
+
+#[cfg(test)]
+mod tests {
+    use super::add_numbers;
+    use pretty_assertions::assert_eq;
+
+    #[test]
+    fn adds_two_numbers() {
+        assert_eq!(add_numbers(2, 3), 5);
+    }
+}
