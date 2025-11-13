@@ -1065,6 +1065,7 @@ dependencies = [
  "codex-app-server-protocol",
  "codex-core",
  "codex-protocol",
+ "once_cell",
  "pretty_assertions",
  "serde",
  "toml",
