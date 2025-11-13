@@ -1,48 +1,48 @@
-# Terraform Infrastructure for Codex Gateway
+# Infraestrutura Terraform para Codex Gateway
 
-This directory contains Terraform configuration for provisioning the GCP infrastructure needed by the Codex Gateway.
+Este diretório contém a configuração Terraform para provisionar a infraestrutura GCP necessária para o Codex Gateway.
 
-## Resources Created
+## Recursos Criados
 
-1. **Cloud Storage Bucket** - For storing generated artifacts
-   - Versioning enabled
-   - Lifecycle policies (30 days retention)
-   - IAM permissions for service account
+1. **Bucket Cloud Storage** - Para armazenar artefatos gerados
+   - Versionamento habilitado
+   - Políticas de ciclo de vida (retenção de 30 dias)
+   - Permissões IAM para service account
 
-2. **Firestore Database** - For API keys and session management
-   - Native mode
-   - Optimistic concurrency
-   - Deployed in the specified region
+2. **Banco Firestore** - Para gerenciamento de API keys e sessões
+   - Modo nativo
+   - Concorrência otimista
+   - Implantado na região especificada
 
-3. **Secret Manager Secrets** - For sensitive credentials
+3. **Secrets do Secret Manager** - Para credenciais sensíveis
    - Gateway API key
    - Anthropic API key
-   - OpenAI API key (optional)
-   - Pipedrive API token (optional)
+   - OpenAI API key (opcional)
+   - Pipedrive API token (opcional)
 
-4. **IAM Permissions** - Proper access controls
-   - Service account access to secrets
-   - Service account access to storage bucket
+4. **Permissões IAM** - Controles de acesso adequados
+   - Acesso da service account aos secrets
+   - Acesso da service account ao bucket de storage
 
-5. **Cloud Monitoring** - Log-based metrics
-   - API request metrics
-   - Error tracking
+5. **Cloud Monitoring** - Métricas baseadas em logs
+   - Métricas de requisições API
+   - Rastreamento de erros
 
-## Prerequisites
+## Pré-requisitos
 
-1. **Install Terraform** (>= 1.5.0)
+1. **Instalar Terraform** (>= 1.5.0)
    ```bash
    brew install terraform  # macOS
-   # or download from https://www.terraform.io/downloads
+   # ou baixe de https://www.terraform.io/downloads
    ```
 
-2. **Authenticate with GCP**
+2. **Autenticar com GCP**
    ```bash
    gcloud auth application-default login
    gcloud config set project elaihub-prod
    ```
 
-3. **Enable required APIs**
+3. **Habilitar APIs necessárias**
    ```bash
    gcloud services enable \
      cloudresourcemanager.googleapis.com \
@@ -54,134 +54,134 @@ This directory contains Terraform configuration for provisioning the GCP infrast
      monitoring.googleapis.com
    ```
 
-## Usage
+## Uso
 
-### 1. Initialize Terraform
+### 1. Inicializar Terraform
 
 ```bash
 cd terraform
 terraform init
 ```
 
-### 2. Review the plan
+### 2. Revisar o plano
 
 ```bash
 terraform plan
 ```
 
-### 3. Apply the configuration
+### 3. Aplicar a configuração
 
 ```bash
 terraform apply
 ```
 
-Review the changes and type `yes` to confirm.
+Revise as mudanças e digite `yes` para confirmar.
 
-### 4. Configure secrets
+### 4. Configurar secrets
 
-After applying, you need to add the actual secret values:
+Após aplicar, você precisa adicionar os valores reais dos secrets:
 
 ```bash
 # Gateway API Key
-echo -n "your-gateway-api-key" | \
+echo -n "sua-gateway-api-key" | \
   gcloud secrets versions add gateway-api-key --data-file=-
 
 # Anthropic API Key
-echo -n "sk-ant-your-key" | \
+echo -n "sk-ant-sua-key" | \
   gcloud secrets versions add anthropic-api-key --data-file=-
 
-# OpenAI API Key (optional)
-echo -n "sk-your-openai-key" | \
+# OpenAI API Key (opcional)
+echo -n "sk-sua-openai-key" | \
   gcloud secrets versions add openai-api-key --data-file=-
 
-# Pipedrive API Token (optional)
-echo -n "your-pipedrive-token" | \
+# Pipedrive API Token (opcional)
+echo -n "seu-pipedrive-token" | \
   gcloud secrets versions add pipedrive-api-token --data-file=-
 ```
 
-## Customization
+## Personalização
 
-Copy `terraform.tfvars.example` to `terraform.tfvars` and adjust values:
+Copie `terraform.tfvars.example` para `terraform.tfvars` e ajuste os valores:
 
 ```bash
 cp terraform.tfvars.example terraform.tfvars
 ```
 
-Edit `terraform.tfvars` with your specific values.
+Edite `terraform.tfvars` com seus valores específicos.
 
-## State Management
+## Gerenciamento de Estado
 
-By default, Terraform state is stored locally. For production, consider using a remote backend:
+Por padrão, o estado do Terraform é armazenado localmente. Para produção, considere usar um backend remoto:
 
-1. Create a GCS bucket for state:
+1. Criar um bucket GCS para o estado:
    ```bash
    gsutil mb gs://elaihub-prod-terraform-state
    gsutil versioning set on gs://elaihub-prod-terraform-state
    ```
 
-2. Uncomment the backend configuration in `main.tf`
+2. Descomentar a configuração de backend em `main.tf`
 
-3. Initialize with the backend:
+3. Inicializar com o backend:
    ```bash
    terraform init -migrate-state
    ```
 
 ## Outputs
 
-After applying, Terraform will output important information:
+Após aplicar, o Terraform irá exibir informações importantes:
 
-- `artifacts_bucket_name` - Name of the GCS bucket
-- `artifacts_bucket_url` - URL of the GCS bucket
-- `firestore_database_name` - Firestore database name
-- `secret_ids` - IDs of created secrets
+- `artifacts_bucket_name` - Nome do bucket GCS
+- `artifacts_bucket_url` - URL do bucket GCS
+- `firestore_database_name` - Nome do banco Firestore
+- `secret_ids` - IDs dos secrets criados
 
-View outputs anytime with:
+Visualize os outputs a qualquer momento com:
 ```bash
 terraform output
 ```
 
-## Cleanup
+## Limpeza
 
-To destroy all resources (use with caution):
+Para destruir todos os recursos (use com cuidado):
 
 ```bash
 terraform destroy
 ```
 
-## Troubleshooting
+## Solução de Problemas
 
-### Permission Denied Errors
+### Erros de Permissão Negada
 
-Ensure your GCP account has the following roles:
+Certifique-se de que sua conta GCP tem as seguintes roles:
 - Storage Admin
 - Firestore Admin
 - Secret Manager Admin
 - Logging Admin
 - Monitoring Admin
 
-### Firestore Already Exists
+### Firestore Já Existe
 
-If Firestore is already configured in your project, comment out the `google_firestore_database` resource in `main.tf`.
+Se o Firestore já estiver configurado no seu projeto, comente o recurso `google_firestore_database` em `main.tf`.
 
-### API Not Enabled
+### API Não Habilitada
 
-Enable required APIs:
+Habilite as APIs necessárias:
 ```bash
 gcloud services enable firestore.googleapis.com
 gcloud services enable secretmanager.googleapis.com
 ```
 
-## Best Practices
+## Melhores Práticas
 
-1. **Use separate environments** - Create different Terraform workspaces or directories for prod/staging
-2. **Version control** - Commit terraform files (but not `.tfstate` or `.tfvars` with secrets)
-3. **Review changes** - Always run `terraform plan` before `apply`
-4. **State backup** - Keep backups of your Terraform state
-5. **Secret rotation** - Regularly rotate secrets in Secret Manager
+1. **Use ambientes separados** - Crie workspaces ou diretórios diferentes do Terraform para prod/staging
+2. **Controle de versão** - Faça commit dos arquivos terraform (mas não `.tfstate` ou `.tfvars` com secrets)
+3. **Revise mudanças** - Sempre execute `terraform plan` antes de `apply`
+4. **Backup de estado** - Mantenha backups do seu estado Terraform
+5. **Rotação de secrets** - Rotacione regularmente os secrets no Secret Manager
 
-## Additional Resources
+## Recursos Adicionais
 
-- [Terraform GCP Provider Docs](https://registry.terraform.io/providers/hashicorp/google/latest/docs)
+- [Documentação do Provider GCP para Terraform](https://registry.terraform.io/providers/hashicorp/google/latest/docs)
 - [GCP Secret Manager](https://cloud.google.com/secret-manager/docs)
 - [GCP Firestore](https://cloud.google.com/firestore/docs)
 - [GCP Cloud Storage](https://cloud.google.com/storage/docs)
