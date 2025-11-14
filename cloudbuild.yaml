@@ -108,11 +108,8 @@ steps:
         fi
     waitFor: ['deploy-cloud-run']
 
-# Images to be pushed to Artifact Registry
-images:
-  - 'us-central1-docker.pkg.dev/$PROJECT_ID/codex-wrapper/wrapper:$COMMIT_SHA'
-  - 'us-central1-docker.pkg.dev/$PROJECT_ID/codex-wrapper/wrapper:latest'
-  - 'us-central1-docker.pkg.dev/$PROJECT_ID/codex-wrapper/wrapper:buildcache'
+# Images already pushed by buildx in step 1 (using --push flag)
+# No need to list them here as they're already in Artifact Registry
 
 # Build options
 options:
