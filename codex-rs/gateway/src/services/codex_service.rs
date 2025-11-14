@@ -11,6 +11,7 @@ use codex_core::ConversationManager;
 use codex_core::auth::AuthManager;
 use codex_core::config::Config as CodexConfig;
 use codex_core::config::ConfigOverrides;
+use codex_core::find_conversation_path_by_id_str;
 use codex_protocol::ConversationId;
 use codex_protocol::models::ContentItem;
 use codex_protocol::models::ResponseItem;
@@ -286,7 +287,7 @@ impl CodexService {
     }
 
     /// Get or create a conversation for the given session
-    async fn get_or_create_conversation(
+    pub async fn get_or_create_conversation(
         &self,
         session_id: Option<&str>,
     ) -> GatewayResult<ConversationId> {
@@ -397,5 +398,100 @@ impl CodexService {
         } else {
             Ok(None)
         }
+    }
+
+    /// Get public accessor to conversation manager
+    pub fn conversation_manager(&self) -> &Arc<Mutex<ConversationManager>> {
+        &self.conversation_manager
+    }
+
+    /// Get public accessor to codex config
+    pub fn codex_config(&self) -> &Arc<CodexConfig> {
+        &self.codex_config
+    }
+
+    /// Get public accessor to active conversations (for WebSocket interrupt)
+    pub fn active_conversations(&self) -> &Arc<Mutex<HashMap<String, ConversationId>>> {
+        &self.active_conversations
+    }
+
+    /// Resume a conversation from a previous session
+    ///
+    /// This method allows resuming a conversation by its ID. It:
+    /// 1. Finds the rollout path for the conversation
+    /// 2. Uses ConversationManager to resume from the rollout
+    /// 3. Registers the conversation with a new session_id
+    ///
+    /// # Arguments
+    ///
+    /// * `conversation_id_str` - The conversation ID to resume
+    /// * `session_id` - New session ID to associate with the resumed conversation
+    ///
+    /// # Returns
+    ///
+    /// The ConversationId of the resumed conversation
+    pub async fn resume_conversation(
+        &self,
+        conversation_id_str: &str,
+        session_id: &str,
+    ) -> GatewayResult<ConversationId> {
+        info!(
+            "Resuming conversation: conversation_id={}, session_id={}",
+            conversation_id_str, session_id
+        );
+
+        // Find rollout path by conversation ID
+        let rollout_path =
+            find_conversation_path_by_id_str(&self.codex_config.codex_home, conversation_id_str)
+                .await
+                .map_err(|e| {
+                    GatewayError::Internal(format!("Failed to find conversation path: {e}"))
+                })?
+                .ok_or_else(|| {
+                    GatewayError::InvalidRequest(format!(
+                        "No conversation found with ID: {conversation_id_str}"
+                    ))
+                })?;
+
+        debug!("Found rollout path: {:?}", rollout_path);
+
+        // Resume via ConversationManager
+        let config = (*self.codex_config).clone();
+        let auth_manager = AuthManager::shared(
+            self.codex_config.codex_home.clone(),
+            false,
+            self.codex_config.cli_auth_credentials_store_mode,
+        );
+
+        let new_conversation = {
+            let manager = self.conversation_manager.lock().await;
+            manager
+                .resume_conversation_from_rollout(config, rollout_path, auth_manager)
+                .await
+                .map_err(|e| {
+                    GatewayError::Internal(format!("Failed to resume conversation: {e}"))
+                })?
+        };
+
+        let conversation_id = new_conversation.conversation_id;
+        let session_configured = new_conversation.session_configured.clone();
+
+        // Register with session_id
+        self.active_conversations
+            .lock()
+            .await
+            .insert(session_id.to_string(), conversation_id);
+
+        self.conversation_metadata
+            .lock()
+            .await
+            .insert(conversation_id, session_configured);
+
+        info!(
+            "Successfully resumed conversation: conversation_id={}, session_id={}",
+            conversation_id, session_id
+        );
+
+        Ok(conversation_id)
     }
 }

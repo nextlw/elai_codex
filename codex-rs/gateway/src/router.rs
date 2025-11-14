@@ -1,6 +1,7 @@
 //! Router configuration for the Codex Gateway
 
 use crate::error::GatewayResult;
+use crate::handlers::exec::{handle_exec, handle_exec_resume};
 use crate::handlers::health::health_check;
 use crate::handlers::jsonrpc::handle_jsonrpc;
 use crate::handlers::webhook::handle_webhook;
@@ -52,6 +53,10 @@ pub async fn create_router(state: AppState) -> GatewayResult<Router> {
         .route("/health", get(health_check))
         // JSON-RPC endpoint for protocol communication
         .route("/jsonrpc", post(handle_jsonrpc))
+        // Exec endpoint for real codex-exec mode (JSONL events)
+        .route("/exec", post(handle_exec))
+        // Exec resume endpoint for resuming conversations
+        .route("/exec/resume", post(handle_exec_resume))
         // WebSocket endpoint for real-time communication
         .route("/ws", get(handle_websocket_upgrade))
         // Webhook endpoint for external integrations

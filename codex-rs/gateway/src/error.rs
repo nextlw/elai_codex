@@ -55,6 +55,10 @@ pub enum GatewayError {
         /// Endpoint path where the violation occurred
         path: String,
     },
+
+    /// Invalid request error (malformed or invalid parameters)
+    #[error("Invalid request: {0}")]
+    InvalidRequest(String),
 }
 
 /// Result type alias for gateway operations
@@ -81,6 +85,7 @@ impl axum::response::IntoResponse for GatewayError {
             GatewayError::PayloadTooLarge { .. } => {
                 (StatusCode::PAYLOAD_TOO_LARGE, self.to_string())
             }
+            GatewayError::InvalidRequest(_) => (StatusCode::BAD_REQUEST, self.to_string()),
         };
 
         let body = Json(serde_json::json!({
