@@ -47,7 +47,8 @@ steps:
       - '--image=us-central1-docker.pkg.dev/$PROJECT_ID/codex-wrapper/wrapper:$COMMIT_SHA'
       - '--region=us-central1'
       - '--platform=managed'
-      - '--service-account=467992722695-compute@developer.gserviceaccount.com'
+      # Service account omitida - usa a padrão do Cloud Run
+      # - '--service-account=467992722695-compute@developer.gserviceaccount.com'
       # Preserve existing configuration
       - '--max-instances=20'
       - '--cpu=2'
@@ -57,7 +58,7 @@ steps:
       - '--port=8080'
       # Environment variables
       - '--set-env-vars=RUST_LOG=info,codex_gateway=debug'
-      - '--set-env-vars=PORT=8080'
+      # PORT é gerenciado automaticamente pelo Cloud Run
       - '--set-env-vars=GATEWAY_HOST=0.0.0.0'
       - '--set-env-vars=REQUEST_TIMEOUT_SECS=300'
       - '--set-env-vars=GATEWAY_BODY_LIMIT_DEFAULT=2097152'
