@@ -19,12 +19,13 @@ WORKDIR /build/codex-rs
 RUN cargo build --release --package codex-gateway
 
 # Stage 2: Runtime environment
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     libssl3 \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
