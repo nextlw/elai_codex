@@ -74,6 +74,8 @@ steps:
       - '--set-env-vars=CODEX_HOME=/home/gateway/.codex'
       # OAuth Configuration
       - '--set-env-vars=OAUTH_CLIENT_ID=codex-gateway-client'
+      # Pipedrive Configuration
+      - '--set-env-vars=PIPEDRIVE_COMPANY_DOMAIN=suri'
       # Secrets from Secret Manager
       - '--set-secrets=GATEWAY_API_KEY=gateway-api-key:latest'
       - '--set-secrets=ANTHROPIC_API_KEY=anthropic-api-key:latest'
